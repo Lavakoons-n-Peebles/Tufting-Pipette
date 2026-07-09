@@ -38,14 +38,21 @@
         <div class="table-box">
 			<div class="actions-panel">
 			    <button class="btn-action btn-disable-empty" id="copy-all"><i class="fa-solid fa-clipboard"></i> Copy</button>
-			    <button class="btn-action" id="paste-json"><i class="fa-solid fa-file-import"></i> Paste</button>
+			    <button class="btn-action" id="paste-all"><i class="fa-solid fa-file-import"></i> Paste</button>
 			    <button class="btn-action btn-disable-empty" id="clear-table">Clear</button>                                            
 			    <span class="divider-vertical"></span>
 			    <label class="btn-action">
 			        <i class="fa-solid fa-folder-open"></i> Import 
-			        <input type="file" id="project-loader" accept=".json" class="hidden">
+			        <input type="file" id="project-loader" class="hidden">
 			    </label>
 			    <button class="btn-action" id="save-project"><i class="fa-solid fa-floppy-disk"></i> Download</button>
+			    <div class="format-control">
+				    <label for="format-select">Format:</label>
+				    <select id="format-select" class="btn-style">
+				        <option value="csv">CSV</option>
+				        <option value="json">JSON</option>
+				    </select>
+				</div>
 			</div>
 			<table id="colors-table">
 			    <thead>
