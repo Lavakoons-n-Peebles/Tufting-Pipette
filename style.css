@@ -194,3 +194,7 @@ body { font-family: 'Segoe UI', sans-serif; color: var(--text-color); margin: 20
 .btn-style:hover {
     border-color: #aaa;
 }
+
+.github {
+    margin-left: auto; text-decoration: none; color: inherit; font-size: 1.2rem;
+}
