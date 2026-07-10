@@ -6,10 +6,6 @@
 
 ![Tufting Pipette preview](images/preview.png)
 
-Examples: use the highlighting
-
-![Tufting Pipette use the highlighting](images/001.png)
-
 ## Key Features
 
 * **Smart Extraction:** Uses an advanced density-based algorithm to identify core colors while filtering out noise, shadows, and anti-aliasing artifacts.
@@ -24,6 +20,8 @@ Examples: use the highlighting
 1. **Upload:** Drag or select your design image to load it onto the canvas.
 2. **Extract:** The tool automatically detects the primary colors. Use the **Search Depth** control to adjust the sensitivity for complex images.
 3. **Refine:** Sort your rows to match your creative flow and use the highlighting feature to pinpoint exactly where each color appears in your design.
+
+![Tufting Pipette use the highlighting](images/001.png)
 
 ## Technical Details
 
