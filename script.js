@@ -189,6 +189,29 @@ function setupEventListeners() {
     } 
     
     document.getElementById('flip-image').addEventListener('click', flipImage);
+
+    // Handle focus for keyboard navigation (Tab)
+    document.addEventListener('focus', (e) => {
+        if (e.target.classList.contains('note-input')) {
+            const row = e.target.closest('tr');
+            if (row) {
+                const hex = row.dataset.hex;
+                toggleHighlight(hex, true);
+                
+                // Update and show preview
+                document.getElementById('fog-preview').src = canvas.toDataURL();
+                document.getElementById('fog-preview-container').classList.remove('hidden');
+            }
+        }
+    }, true); 
+
+    // Handle blur to reset highlight
+    document.addEventListener('blur', (e) => {
+        if (e.target.classList.contains('note-input')) {
+            toggleHighlight(null, false);
+            document.getElementById('fog-preview-container').classList.add('hidden');
+        }
+    }, true);    
 }
 
 /**
@@ -499,40 +522,41 @@ function normalizePercentages() {
     const rows = Array.from(document.querySelectorAll('#colors-table tbody tr'));
     if (rows.length === 0) return;
 
-    let currentTotal = rows.reduce((sum, row) => sum + parseFloat(row.dataset.percent || 0), 0);
+    let currentTotal = rows.reduce((sum, row) => sum + (parseFloat(row.dataset.percent) || 0), 0);
     
-    // Check if the current sum is already over 100%
-    if (currentTotal > 100) {
-        showToast('Total percentage exceeds 100%. Please adjust it.', 'error');
+    // Check if the total is already within the acceptable margin of error
+    if (Math.abs(currentTotal - 100) < 0.05) {
+        showToast('Already normalized', 'info');
         return;
     }
 
-    if (currentTotal === 0) return;
+    if (currentTotal > 100.1) {
+        showToast('Total exceeds 100%. Adjust manually.', 'error');
+        return;
+    }
 
     showConfirmModal(() => {
         let sumAdjusted = 0;
         
         rows.forEach((row, index) => {
-            const currentVal = parseFloat(row.dataset.percent || 0);
-            
             if (index === rows.length - 1) {
+                // Ensure the final row closes the gap to exactly 100%
                 const remainder = 100 - sumAdjusted;
                 row.dataset.percent = remainder.toFixed(1);
             } else {
+                const currentVal = parseFloat(row.dataset.percent) || 0;
                 const normalized = (currentVal / currentTotal) * 100;
-                const rounded = parseFloat(normalized.toFixed(1));
+                const rounded = Math.round(normalized * 10) / 10;
                 row.dataset.percent = rounded.toFixed(1);
                 sumAdjusted += rounded;
             }
 
             const percentInput = row.querySelector('.percent-input');
-            if (percentInput) {
-                percentInput.textContent = row.dataset.percent;
-            }
+            if (percentInput) percentInput.textContent = row.dataset.percent;
         });
         
         updateTotalPercent();
-        showToast('Percentages successfully normalized to 100%', 'success');
+        showToast('Normalized to 100%', 'success');
     });
 }
 
