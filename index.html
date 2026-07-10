@@ -17,16 +17,13 @@
 		</label>
 		<button class="btn-action btn-pick" id="start-pick" title="Pick up">&#128269;</button>
 		<span class="divider-vertical"></span>
-		<button id="flip-image" class="btn-action" title="Flip Image Horizontally">
-			<i class="fa-solid fa-right-left"></i>
-		</button>
-		<span class="divider-vertical"></span>
 		<label>Search depth: <input type="number" id="search-depth" value="24" min="2" max="50"></label>
 		<button class="btn-action" id="auto-palette">
 			<i class="fa-solid fa-wand-magic-sparkles"></i> Magic
 		</button>
-		<a class="github" href="https://github.com/Lavakoons-n-Peebles/tufting-pipette" target="_blank" title="View Source on GitHub">
-    		<i class="fa-brands fa-github"></i>
+		<a class="github" href="https://github.com/Lavakoons-n-Peebles/tufting-pipette" target="_blank"
+			title="View Source on GitHub">
+			<i class="fa-brands fa-github"></i>
 		</a>
 	</div>
 
@@ -38,12 +35,17 @@
 				<canvas id="highlight-layer"
 					style="position: absolute; top: 0; left: 0; z-index: 2; pointer-events: none;"></canvas>
 			</div>
+			<div class="actions-panel">
+				<button id="flip-image" class="btn-action" title="Flip Image Horizontally">
+					<i class="fa-solid fa-right-left"></i>
+				</button>
+			</div>
 
 			<div id="fog-preview-container" class="hidden">
 				<p>Original view:</p>
 				<img id="fog-preview" src="" style="width: 100px;">
 			</div>
-		</div>		
+		</div>
 		<div class="table-box">
 			<div class="actions-panel">
 				<button class="btn-action btn-disable-empty" id="copy-all"><i class="fa-solid fa-clipboard"></i>
@@ -72,13 +74,13 @@
 						<th>HEX</th>
 						<th>
 							<button id="btn-normalize" class="btn-normalize" title="Normalize percentages to 100%">
-        						<i class="fa-solid fa-arrows-to-circle"></i>
-    						</button>
+								<i class="fa-solid fa-arrows-to-circle"></i>
+							</button>
 							<span id="total-percent">0%</span>
 							<button id="sort-percent" class="btn-sort" title="Сортировать по убыванию">
 								<i class="fa-solid fa-sort-down"></i>
 							</button>
-							
+
 						</th>
 						<th></th>
 						<th>Description</th>

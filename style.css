@@ -200,10 +200,12 @@ body { font-family: 'Segoe UI', sans-serif; color: var(--text-color); margin: 20
 }
 
 .percent-container {
-    cursor: text;
     padding-right: 5px;
 }
+
+
 .percent-input {
+    cursor: text;
     display: inline-block;
     min-width: 30px;
     outline: none;
