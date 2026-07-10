@@ -5,9 +5,7 @@ const img = new Image();
 let isDropperActive = false;
 let imgPixels = null;
 let currentFormat = 'csv'; // csv, json
-// Image State
 let isFlipped = false;
-let isFullscreen = false;
 
 let originalContainerStyle = {};
 
@@ -15,7 +13,9 @@ const TABLE_ROW_TEMPLATE = `
     <td></td>
     <td><div class="color-preview" style="background-color: #{{hex}};"></div></td>
     <td class="hex-text">#{{hex}}</td>
-    <td class="percentage-badge">{{percent}}%</td>
+    <td class="percent-container">
+        <span class="percent-input" contenteditable="true">{{percent}}</span> %
+    </td>
     <td>
         <div class="action-group">
             <button class="btn-copy btn-disable-empty" tabindex="-1"><i class="fa-solid fa-clipboard"></i></button>
@@ -91,6 +91,44 @@ function addColorToTable(hex, percent, note = '') {
     });
     tbody.appendChild(row);
 
+    // Editable percentage handler
+    const percentInput = row.querySelector('.percent-input');
+
+    percentInput.addEventListener('keydown', (e) => {
+        // Prevent line breaks (Enter)
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            percentInput.blur();
+        }
+    });
+
+    percentInput.addEventListener('input', (e) => {
+        // Remove all non-numeric and non-dot characters
+        const cleanValue = e.target.textContent.replace(/[^0-9.]/g, '');
+        
+        // If input changed, update content and dataset
+        if (e.target.textContent !== cleanValue) {
+            e.target.textContent = cleanValue;
+            // Move cursor to end to prevent jumpiness
+            const range = document.createRange();
+            const sel = window.getSelection();
+            range.selectNodeContents(e.target);
+            range.collapse(false);
+            sel.removeAllRanges();
+            sel.addRange(range);
+        }
+       
+        row.dataset.percent = cleanValue;
+        updateTotalPercent();
+    });
+
+    percentInput.addEventListener('blur', (e) => {
+        if (!e.target.textContent.trim()) e.target.textContent = '0';
+        console.log('!');
+        updateTotalPercent();
+    });
+    //-- Editable percentage handler
+
     row.querySelector('.note-input').focus();
 }
 
@@ -136,15 +174,7 @@ function initMutationObserver() {
     
     const observer = new MutationObserver(() => {
         observer.disconnect(); 
-        document.querySelectorAll('#colors-table tbody tr').forEach((r, i) => r.cells[0].innerText = i + 1);
-        const total = Array.from(document.querySelectorAll('tr[data-percent]')).reduce((s, r) => s + parseFloat(r.dataset.percent || 0), 0);
-        const el = document.getElementById('total-percent');
-        if (el) {
-            el.innerText = `${total.toFixed(1)}%`;
-            el.style.color = total > 100 ? 'red' : 'inherit';
-        }
-        updateUIState();
-        
+        updateTotalPercent();
         observer.observe(tbody, { childList: true }); 
     });
     
@@ -326,6 +356,31 @@ function getTableData() {
     }));
 }
 
+/**
+ * Updates the total percentage in the UI and recalculates row numbers.
+ */
+function updateTotalPercent() {
+    const rows = document.querySelectorAll('#colors-table tbody tr');
+    let total = 0;
+
+    rows.forEach((row, i) => {
+        // Update row number
+        row.cells[0].innerText = i + 1;
+        
+        // Calculate total based on current dataset.percent
+        const val = parseFloat(row.dataset.percent || 0);
+        total += val;
+    });
+
+    const el = document.getElementById('total-percent');
+    if (el) {
+        el.innerText = `${total.toFixed(1)}%`;
+        el.style.color = total > 100 ? 'red' : 'inherit';
+    }
+
+    updateUIState();
+}
+
 /** Parses raw string input into data objects */
 function parseData(raw, format) {
     if (format === 'json') return JSON.parse(raw);
@@ -355,6 +410,30 @@ function stringifyData(data, format) {
     const rows = data.map(d => `${d.hex}\t${d.percent}\t${d.note}`);
     return [header, ...rows].join('\n');
 }      
+
+/**
+ * Normalizes all percentages in the table to sum up to exactly 100%.
+ */
+function normalizePercentages() {
+    const tableRows = document.querySelectorAll('#colors-table tbody tr');
+    let total = 0;
+
+    // Calculate current sum of percentages
+    tableRows.forEach(row => {
+        total += parseFloat(row.querySelector('.percent-input').textContent) || 0;
+    });
+
+    // Adjust each row proportionally
+    tableRows.forEach(row => {
+        const cell = row.querySelector('.percent-input');
+        const currentVal = parseFloat(cell.textContent) || 0;
+        if (total > 0) {
+            cell.textContent = ((currentVal / total) * 100).toFixed(1);
+        }
+    });
+
+    updateTotalPercent();
+}
 
 // HIGHLIGHTING
 const hlCanvas = document.getElementById('highlight-layer');
@@ -420,7 +499,7 @@ document.addEventListener('click', (e) => {
     }
 });
 
-function autoExtractPalette(searchDepth = 24) {
+function autoExtractPalette1(searchDepth = 24) {
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData.data;
     const colorMap = new Map();
@@ -467,6 +546,82 @@ function autoExtractPalette(searchDepth = 24) {
     });
 }
 
+/**
+ * Automatically extracts the color palette from the canvas.
+ * Filters background based on corner sampling and noise based on density.
+ */
+function autoExtractPalette(searchDepth = 24) {
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    const colorMap = new Map();
+
+    // Helper to sample average color from corners
+    const getCornerColor = (x, y) => {
+        const sample = ctx.getImageData(x, y, 20, 20).data;
+        let r = 0, g = 0, b = 0;
+        for (let i = 0; i < sample.length; i += 4) {
+            r += sample[i]; g += sample[i + 1]; b += sample[i + 2];
+        }
+        return { r: r / 100, g: g / 100, b: b / 100 };
+    };
+
+    // Sample from 4 corners to determine background more accurately
+    const c1 = getCornerColor(0, 0);
+    const c2 = getCornerColor(canvas.width - 20, 0);
+    const c3 = getCornerColor(0, canvas.height - 20);
+    const c4 = getCornerColor(canvas.width - 20, canvas.height - 20);
+    
+    const bg = {
+        r: (c1.r + c2.r + c3.r + c4.r) / 4,
+        g: (c1.g + c2.g + c3.g + c4.g) / 4,
+        b: (c1.b + c2.b + c3.b + c4.b) / 4
+    };
+
+    const threshold = 40; 
+
+    for (let i = 0; i < data.length; i += 16) {
+        if (data[i + 3] < 128) continue;
+
+        let r = data[i], g = data[i + 1], b = data[i + 2];
+
+        // Force white if close to pure white to avoid black artifacts
+        if (r > 240 && g > 240 && b > 240) {
+            r = 255; g = 255; b = 255;
+        } else if (r + g + b < 50) {
+            continue; // Ignore dark noise
+        } else {
+            r = Math.round(r / 20) * 20;
+            g = Math.round(g / 20) * 20;
+            b = Math.round(b / 20) * 20;
+        }
+
+        const rgb = `${r},${g},${b}`;
+        colorMap.set(rgb, (colorMap.get(rgb) || 0) + 1);
+    }
+
+    let entries = [...colorMap.entries()].sort((a, b) => b[1] - a[1]);
+    const totalCount = entries.reduce((sum, item) => sum + item[1], 0);
+
+    const filtered = entries
+        .filter(item => (item[1] / totalCount) * 100 >= 0.4)
+        .slice(0, searchDepth);
+        
+    const finalTotal = filtered.reduce((sum, item) => sum + item[1], 0);
+
+    document.querySelector('#colors-table tbody').innerHTML = '';
+
+    filtered.forEach(([rgb, freq]) => {
+        const [r, g, b] = rgb.split(',').map(Number);
+        const hex = rgbToHex(r, g, b);
+        const percent = ((freq / finalTotal) * 100).toFixed(1);
+        addColorToTable(hex, percent);
+    });
+    
+    updateTotalPercent();
+}
+
 function updateUIState() {
     const tbody = document.querySelector('#colors-table tbody');
     const isEmpty = tbody.rows.length === 0;
@@ -477,6 +632,7 @@ function updateUIState() {
         btn.disabled = isEmpty;
     });
 }
+
 updateUIState();
 
 // DRAG AND DROP

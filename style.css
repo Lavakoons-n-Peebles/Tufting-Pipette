@@ -198,3 +198,15 @@ body { font-family: 'Segoe UI', sans-serif; color: var(--text-color); margin: 20
 .github {
     margin-left: auto; text-decoration: none; color: inherit; font-size: 1.2rem;
 }
+
+.percent-container {
+    cursor: text;
+    padding-right: 5px;
+}
+.percent-input {
+    display: inline-block;
+    min-width: 30px;
+    outline: none;
+    white-space: nowrap;
+ }
+
