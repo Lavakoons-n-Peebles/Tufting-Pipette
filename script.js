@@ -714,8 +714,6 @@ function autoExtractPalette(searchDepth = 24) {
         // Force white if close to pure white to avoid black artifacts
         if (r > 240 && g > 240 && b > 240) {
             r = 255; g = 255; b = 255;
-        } else if (r + g + b < 50) {
-            continue; // Ignore dark noise
         } else {
             r = Math.round(r / 20) * 20;
             g = Math.round(g / 20) * 20;
