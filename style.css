@@ -6,6 +6,7 @@
     --success-color: #8BC34A;
     --border-color: #ddd;
     --text-color: #333;
+    --image-width: 820px;
 }
 
 * { box-sizing: border-box; }
@@ -15,18 +16,18 @@ body { font-family: 'Segoe UI', sans-serif; color: var(--text-color); margin: 20
    2. LAYOUT & GRID
    ========================================================================== */
 .container { display: flex; gap: 20px; flex-wrap: wrap; }
-.canvas-box { flex: 0 0 420px; max-width: 100%; }
+#canvas-box { flex: 0 0 var(--image-width); max-width: 100%; }
 .table-box { flex: 1; min-width: 300px; }
 
 @media (max-width: 800px) {
     .container { flex-direction: column; }
-    .canvas-box { margin: 0 auto; }
+    #canvas-box { margin: 0 auto; }
 }
 
 /* ==========================================================================
    3. COMPONENTS
    ========================================================================== */
-#canvas { max-width: 420px; width: 100%; height: auto; border: 1px solid var(--border-color); display: block; }
+#canvas { max-width: var(--image-width); width: 100%; height: auto; border: 1px solid var(--border-color); display: block; }
 .hidden { display: none; }
 
 .actions-panel { 
@@ -79,7 +80,7 @@ body { font-family: 'Segoe UI', sans-serif; color: var(--text-color); margin: 20
 .blink-row { animation: blink 0.5s; }
 @keyframes blink { 0% { background: #fffde7; } 100% { background: transparent; } }
    
-// UPDATES (TO SORT)   
+ /* UPDATES (TO SORT)    */
    
 /* Buttons */
 .btn-copy, .btn-delete {
@@ -112,7 +113,7 @@ body { font-family: 'Segoe UI', sans-serif; color: var(--text-color); margin: 20
 .btn-sort:hover { color: var(--primary-color); }
 
 #highlight-layer { 
-    max-width: 420px; 
+    max-width: var(--image-width); 
     width: 100%; 
     height: auto; 
     transition: opacity 0.3s;
